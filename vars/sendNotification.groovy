@@ -1,20 +1,16 @@
 def call(String buildStatus = 'STARTED') {
+  // Build status of null means success.
   buildStatus = buildStatus ?: 'SUCCESS'
 
-  def color
-
+  def colorCode = '#FF0000'
   if (buildStatus == 'SUCCESS') {
-    color = '#47ec05'
-    emoji = ':ww:'
- } else if (buildStatus == 'UNSTABLE') {
-    color = '#d5ee0d'
-    emoji = ':deadpool:'
- } else {
-    color = '#ec2805'
-    emoji = ':hulk:'
+    colorCode = '#36A64F'
+    } else if (buildStatus == 'UNSTABLE') {
+    colorCode = '#FFFF00'
   }
 
-  def msg = "${buildStatus}: `${env.JOB_NAME}` #${env.BUILD_NUMBER}:\n${env.BUILD_URL}"
+  // Slack message
+  def message = "*${buildStatus}:* Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
 
-  slackSend(iconEmoji: emoji, color: color, message: msg)
+  slackSend(color: colorCode, message: message, channel: "#${env.SLACK_CHANNEL}")
 }

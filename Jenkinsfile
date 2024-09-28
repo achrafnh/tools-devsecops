@@ -275,17 +275,26 @@ pipeline {
     //   }
     // }
 
-      stage('Testing Slack - 1') {
+    stage('Build') {
       steps {
-          sh 'exit 0'
-      }
-      }
-
-    stage('Testing Slack - Error Stage') {
-      steps {
-          sh 'exit 0'
+        script {
+          sendNotification('STARTED')
+        }
+      // Vos étapes de build ici
       }
     }
+
+        stage('Test') {
+      steps {
+      // Vos étapes de test ici
+      }
+        }
+
+        stage('Deploy') {
+      steps {
+      // Vos étapes de déploiement ici
+      }
+        }
   }
 
   post {
@@ -297,26 +306,23 @@ pipeline {
           // publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'owasp-zap-report', reportFiles: 'zap_report.html', reportName: 'OWASP ZAP HTML Report', reportTitles: 'OWASP ZAP HTML Report'])
 
         //Use sendNotifications.groovy from shared library and provide current build result as parameter
-          sendNotification currentBuild.result
+        // sendNotification currentBuild.result
         }
 
-        // success {
-        //   script {
-        //             /* Use slackNotifier.groovy from shared library and provide current build result as parameter */
-        //     env.failedStage = 'none'
-        //     env.emoji = ':white_check_mark: :tada: :thumbsup_all:'
-        //     sendNotification currentBuild.result
-        //   }
-        // }
-
-        // failure {
-        //   script {
-        //     //Fetch information about  failed stage
-        //     def failedStages = getFailedStages(currentBuild)
-        //     env.failedStage = failedStages.failedStageName
-        //     env.emoji = ':x: :red_circle: :sos:'
-        //     sendNotification currentBuild.result
-        //   }
-        // }
+    success {
+      script {
+        sendNotification('SUCCESS')
+      }
+    }
+        failure {
+      script {
+        sendNotification('FAILURE')
+      }
+        }
+        unstable {
+      script {
+        sendNotification('UNSTABLE')
+      }
+        }
   }
 }
