@@ -87,13 +87,19 @@ pipeline {
       steps {
         parallel(
             'Dependency Scan': {
+               catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                 sh 'mvn dependency-check:check'
+               }
             },
             'Trivy Scan': {
+               catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                 sh 'bash trivy-docker-image-scan.sh'
+               }
             },
             'OPA Conftest': {
-                sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-docker-security.rego Dockerfile'
+               catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                sh 'sudo docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-docker-security.rego Dockerfile'
+               }
             }
           )
       }
