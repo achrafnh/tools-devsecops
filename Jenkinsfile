@@ -30,7 +30,6 @@ List<Map> getStageResults( RunWrapper build ) {
         ]
     }
 }
-
 // Get information of all failed stages
 @NonCPS
 List<Map> getFailedStages( RunWrapper build ) {
