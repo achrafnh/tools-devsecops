@@ -1,6 +1,5 @@
 @Library('slack') _
 
-
 /////// ******************************* Code for fectching Failed Stage Name ******************************* ///////
 import io.jenkins.blueocean.rest.impl.pipeline.PipelineNodeGraphVisitor
 import io.jenkins.blueocean.rest.impl.pipeline.FlowNodeWrapper
@@ -10,30 +9,28 @@ import org.jenkinsci.plugins.workflow.actions.ErrorAction
 // Get information about all stages, including the failure cases
 // Returns a list of maps: [[id, failedStageName, result, errors]]
 @NonCPS
-List<Map> getStageResults( RunWrapper build ) {
+List<Map> getStageResults(RunWrapper build) {
+  // Get all pipeline nodes that represent stages
+  def visitor = new PipelineNodeGraphVisitor(build.rawBuild)
+  def stages = visitor.pipelineNodes.findAll { it.type == FlowNodeWrapper.NodeType.STAGE }
 
-    // Get all pipeline nodes that represent stages
-    def visitor = new PipelineNodeGraphVisitor( build.rawBuild )
-    def stages = visitor.pipelineNodes.findAll{ it.type == FlowNodeWrapper.NodeType.STAGE }
-
-    return stages.collect{ stage ->
-
+  return stages.collect { stage ->
         // Get all the errors from the stage
-        def errorActions = stage.getPipelineActions( ErrorAction )
-        def errors = errorActions?.collect{ it.error }.unique()
+        def errorActions = stage.getPipelineActions(ErrorAction)
+        def errors = errorActions?.collect { it.error }.unique()
 
-        return [ 
-            id: stage.id, 
-            failedStageName: stage.displayName, 
+        return [
+            id: stage.id,
+            failedStageName: stage.displayName,
             result: "${stage.status.result}",
             errors: errors
         ]
-    }
+  }
 }
-// Get information of all failed stages
+// Get information of all failed stages not ok
 @NonCPS
-List<Map> getFailedStages( RunWrapper build ) {
-    return getStageResults( build ).findAll{ it.result == 'FAILURE' }
+List<Map> getFailedStages(RunWrapper build) {
+  return getStageResults(build).findAll { it.result == 'FAILURE' }
 }
 
 /////// ******************************* Code for fectching Failed Stage Name ******************************* ///////
@@ -42,17 +39,16 @@ pipeline {
   agent any
 
   environment {
-    deploymentName = "devsecops"
-    containerName = "devsecops-container"
-    serviceName = "devsecops-svc"
+    deploymentName = 'devsecops'
+    containerName = 'devsecops-container'
+    serviceName = 'devsecops-svc'
     imageName = "siddharth67/numeric-app:${GIT_COMMIT}"
-    applicationURL="http://devsecopstp1.eastus.cloudapp.azure.com"
-    applicationURI="/increment/99"
+    applicationURL = 'http://devsecopstp1.eastus.cloudapp.azure.com'
+    applicationURI = '/increment/99'
     GIT_PREVIOUS_SUCCESSFUL_COMMIT = sh(script: 'git rev-parse HEAD~1', returnStdout: true).trim()
   }
 
   stages {
-
  //    stage('Build Artifact - Maven') {
  //      steps {
  //        sh "mvn clean package -DskipTests=true"
@@ -76,8 +72,8 @@ pipeline {
  //      steps {
  //        withSonarQubeEnv('SonarQube') {
  //          sh "mvn sonar:sonar \
-	// 	              -Dsonar.projectKey=numeric-application \
-	// 	              -Dsonar.host.url=http://devsecops-demo.eastus.cloudapp.azure.com:9000"
+    //                   -Dsonar.projectKey=numeric-application \
+    //                   -Dsonar.host.url=http://devsecops-demo.eastus.cloudapp.azure.com:9000"
  //        }
  //        timeout(time: 2, unit: 'MINUTES') {
  //          script {
@@ -87,22 +83,21 @@ pipeline {
  //      }
  //    }
 
-	// stage('Vulnerability Scan - Docker') {
+    // stage('Vulnerability Scan - Docker') {
  //      steps {
  //        parallel(
- //        	"Dependency Scan": {
- //        		sh "mvn dependency-check:check"
-	// 		},
-	// 		"Trivy Scan":{
-	// 			sh "bash trivy-docker-image-scan.sh"
-	// 		},
-	// 		"OPA Conftest":{
-	// 			sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-docker-security.rego Dockerfile'
-	// 		}   	
- //      	)
+ //            "Dependency Scan": {
+ //                sh "mvn dependency-check:check"
+    //         },
+    //         "Trivy Scan":{
+    //             sh "bash trivy-docker-image-scan.sh"
+    //         },
+    //         "OPA Conftest":{
+    //             sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-docker-security.rego Dockerfile'
+    //         }
+ //          )
  //      }
  //    }
-    
 
  //    stage('Docker Build and Push') {
  //      steps {
@@ -233,52 +228,50 @@ pipeline {
  //          }
  //        }
  //      }
- //    }   
-   
+ //    }
+
       stage('Testing Slack - 1') {
       steps {
           sh 'exit 0'
       }
-    }
+      }
 
-   stage('Testing Slack - Error Stage') {
+    stage('Testing Slack - Error Stage') {
       steps {
           sh 'exit 0'
       }
     }
-
   }
 
-  post { 
-     //    always { 
+  post {
+     //    always {
      //      junit 'target/surefire-reports/*.xml'
      //      jacoco execPattern: 'target/jacoco.exec'
      //      pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
      //      dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
      //      publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'owasp-zap-report', reportFiles: 'zap_report.html', reportName: 'OWASP ZAP HTML Report', reportTitles: 'OWASP ZAP HTML Report'])
-        
- 		  // //Use sendNotifications.groovy from shared library and provide current build result as parameter 
+
+           // //Use sendNotifications.groovy from shared library and provide current build result as parameter
      //      //sendNotification currentBuild.result
      //    }
 
         success {
-        	script {
-		        /* Use slackNotifier.groovy from shared library and provide current build result as parameter */  
-		        env.failedStage = "none"
-		        env.emoji = ":white_check_mark: :tada: :thumbsup_all:" 
-		        sendNotification currentBuild.result
-		      }
+      script {
+                /* Use slackNotifier.groovy from shared library and provide current build result as parameter */
+        env.failedStage = 'none'
+        env.emoji = ':white_check_mark: :tada: :thumbsup_all:'
+        sendNotification currentBuild.result
+      }
         }
 
-	    failure {
-	    	script {
-			  //Fetch information about  failed stage
-		      def failedStages = getFailedStages( currentBuild )
-	          env.failedStage = failedStages.failedStageName
-	          env.emoji = ":x: :red_circle: :sos:"
-		      sendNotification currentBuild.result
-		    }	
-	    }
-    }
-
+        failure {
+      script {
+        //Fetch information about  failed stage
+        def failedStages = getFailedStages(currentBuild)
+        env.failedStage = failedStages.failedStageName
+        env.emoji = ':x: :red_circle: :sos:'
+        sendNotification currentBuild.result
+      }
+        }
+  }
 }
