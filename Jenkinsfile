@@ -49,18 +49,18 @@ pipeline {
   }
 
   stages {
-      stage('Checkout') {
-          steps {
-            // Check out the repository
-            checkout scm
+    stage('Checkout') {
+      steps {
+        // Check out the repository
+        checkout scm
 
-        // Print the GIT_COMMIT variable
+        // Manually capture the GIT_COMMIT hash
         script {
           env.GIT_COMMIT = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
           echo "Git commit hash: ${env.GIT_COMMIT}"
         }
-          }
       }
+    }
     stage('Build Artifact - Maven') {
       steps {
         sh 'mvn clean package -DskipTests=true'
