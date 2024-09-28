@@ -280,19 +280,19 @@ pipeline {
         script {
           sendNotification('STARTED')
         }
-      // Vos étapes de build ici
+        sh 'exit 0'
       }
     }
 
         stage('Test') {
       steps {
-      // Vos étapes de test ici
+        sh 'exit 0'
       }
         }
 
         stage('Deploy') {
       steps {
-      // Vos étapes de déploiement ici
+        sh 'exit 1'
       }
         }
   }
