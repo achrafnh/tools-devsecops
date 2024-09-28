@@ -47,8 +47,9 @@ pipeline {
     containerName = "devsecops-container"
     serviceName = "devsecops-svc"
     imageName = "siddharth67/numeric-app:${GIT_COMMIT}"
-    applicationURL="http://devsecops-demo.eastus.cloudapp.azure.com"
+    applicationURL="http://devsecopstp1.eastus.cloudapp.azure.com"
     applicationURI="/increment/99"
+    GIT_PREVIOUS_SUCCESSFUL_COMMIT = sh(script: 'git rev-parse HEAD~1', returnStdout: true).trim()
   }
 
   stages {
