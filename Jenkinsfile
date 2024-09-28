@@ -93,7 +93,7 @@ pipeline {
             },
             'Trivy Scan': {
                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                sh 'bash trivy-docker-image-scan.sh'
+                sh 'sudo bash trivy-docker-image-scan.sh'
                }
             },
             'OPA Conftest': {
@@ -110,7 +110,7 @@ pipeline {
         withDockerRegistry([credentialsId: 'docker-hub', url: '']) {
           sh 'printenv'
           sh 'sudo docker build -t hrefnhaila/numeric-app:""$GIT_COMMIT"" .'
-          sh 'docker push hrefnhaila/numeric-app:""$GIT_COMMIT""'
+          sh 'sudo docker push hrefnhaila/numeric-app:""$GIT_COMMIT""'
         }
       }
     }
@@ -119,13 +119,13 @@ pipeline {
       steps {
         parallel(
           'OPA Scan': {
-            sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-k8s-security.rego k8s_deployment_service.yaml'
+            sh 'sudo docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-k8s-security.rego k8s_deployment_service.yaml'
           },
           'Kubesec Scan': {
-            sh 'bash kubesec-scan.sh'
+            sh 'sudo bash kubesec-scan.sh'
           },
           'Trivy Scan': {
-            sh 'bash trivy-k8s-scan.sh'
+            sh 'sudo bash trivy-k8s-scan.sh'
           }
         )
       }
@@ -136,12 +136,12 @@ pipeline {
         parallel(
           'Deployment': {
             withKubeConfig([credentialsId: 'kubeconfig']) {
-              sh 'bash k8s-deployment.sh'
+              sh 'sudo bash k8s-deployment.sh'
             }
           },
           'Rollout Status': {
             withKubeConfig([credentialsId: 'kubeconfig']) {
-              sh 'bash k8s-deployment-rollout-status.sh'
+              sh 'sudo bash k8s-deployment-rollout-status.sh'
             }
           }
         )
@@ -153,7 +153,7 @@ pipeline {
         script {
           try {
             withKubeConfig([credentialsId: 'kubeconfig']) {
-              sh 'bash integration-test.sh'
+              sh 'sudo bash integration-test.sh'
             }
           } catch (e) {
             withKubeConfig([credentialsId: 'kubeconfig']) {
@@ -168,7 +168,7 @@ pipeline {
     stage('OWASP ZAP - DAST') {
       steps {
         withKubeConfig([credentialsId: 'kubeconfig']) {
-          sh 'bash zap.sh'
+          sh 'sudo bash zap.sh'
         }
       }
     }
@@ -186,13 +186,13 @@ pipeline {
         script {
           parallel(
             'Master': {
-              sh 'bash cis-master.sh'
+              sh 'sudo bash cis-master.sh'
             },
             'Etcd': {
-              sh 'bash cis-etcd.sh'
+              sh 'sudo bash cis-etcd.sh'
             },
             'Kubelet': {
-              sh 'bash cis-kubelet.sh'
+              sh 'sudo bash cis-kubelet.sh'
             }
           )
         }
@@ -210,7 +210,7 @@ pipeline {
           },
           'Rollout Status': {
             withKubeConfig([credentialsId: 'kubeconfig']) {
-              sh 'bash k8s-PROD-deployment-rollout-status.sh'
+              sh 'sudo bash k8s-PROD-deployment-rollout-status.sh'
             }
           }
         )
@@ -222,7 +222,7 @@ pipeline {
         script {
           try {
             withKubeConfig([credentialsId: 'kubeconfig']) {
-              sh 'bash integration-test-PROD.sh'
+              sh 'sudo bash integration-test-PROD.sh'
             }
           } catch (e) {
             withKubeConfig([credentialsId: 'kubeconfig']) {
