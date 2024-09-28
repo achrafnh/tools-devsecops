@@ -58,6 +58,9 @@ pipeline {
         script {
           env.GIT_COMMIT = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
           echo "Git commit hash: ${env.GIT_COMMIT}"
+          // Get the branch name
+          env.GIT_BRANCH = sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()
+          echo "Git branch: ${env.GIT_BRANCH}"
         }
       }
     }
