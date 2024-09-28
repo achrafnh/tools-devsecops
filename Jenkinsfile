@@ -49,6 +49,17 @@ pipeline {
   }
 
   stages {
+      stage('Checkout') {
+          steps {
+            // Check out the repository
+            checkout scm
+
+            // Print the GIT_COMMIT variable
+            script {
+              echo "Current Git commit is ${env.GIT_COMMIT}"
+            }
+          }
+        }
     stage('Build Artifact - Maven') {
       steps {
         sh 'mvn clean package -DskipTests=true'
